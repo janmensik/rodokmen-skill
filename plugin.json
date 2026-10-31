@@ -1,0 +1,11 @@
+{
+  "name": "rodokmen",
+  "displayName": "Rodokmen",
+  "version": "0.4.1",
+  "description": "Rodokmen z českých matrik a rodinný web – průvodce pro začátečníky (česky).",
+  "suggestedPrompts": [
+    "Chci udělat rodokmen své rodiny.",
+    "Ukaž mi ukázkový web rodokmenu.",
+    "Pokračujme v hledání předků v matrikách."
+  ]
+}

@@ -98,8 +98,8 @@ Adresy u nevyzkoušených portálů ověř při prvním použití (portály se m
 ## Matricula (Rakousko, Bavorsko, Polsko…; data.matricula-online.eu) – `tools/matricula_*.sh`
 - Bez přihlášení. Seznam knih: `…/de/oesterreich/<diecéze>/<farnost>/?page=N`; snímek knihy `…/<id>/?pg=<snímek>`
   (zároveň trvalý odkaz).
-- URL obrázku obsahuje `csrf` a `ctrl` počítané JavaScriptem → je potřeba prohlížeč (Playwright / Claude in Chrome):
-  otevři knihu, klikni na stránku (`.docview-pagelink`), URL obrázku vezmi z `performance.getEntriesByType('resource')`
+- URL obrázku obsahuje `csrf` a `ctrl` počítané JavaScriptem → je potřeba prohlížeč (integrovaný prohlížeč v Antigravity / `chrome-devtools-mcp`):
+  otevři knihu, klikni na stránku (`.docview-pagelink`), URL obrázku vezmi z `performance.getEntriesByType('resource')` (přes `evaluate_script` nebo `list_network_requests`)
   a stáhni `bash tools/matricula_dl.sh "<url>" pracovni/x.jpg`. Víc stránek: soubor řádků „<snímek> <url>“ → `matricula_batch.sh`.
 - Vojenské matriky (např. Štýrský Hradec) tam nejsou – jsou v Kriegsarchivu ve Vídni (offline).
 
@@ -138,7 +138,7 @@ A když osoba „chybí“ v očekávaných matrikách (stěhovala se se službo
 
 ## Ostatní portály – obecný postup
 Nástroje pro ně hotové nejsou. Postupuj takto a výsledek zapiš do `STAV.md`, ať to příště víš:
-1. Otevři portál v prohlížeči (Claude in Chrome / Playwright, pokud jsou k dispozici; jinak požádej uživatele).
+1. Otevři portál v prohlížeči (integrovaný prohlížeč v Antigravity / `chrome-devtools-mcp`, pokud je k dispozici; jinak požádej uživatele).
    Najdi fond „Sbírka matrik“ / „Matriky“ a svazek podle obce a let.
 2. **Snímek:** většina prohlížečů má tlačítko ke stažení obrázku – ulož do `pracovni/`. Když ne, podívej se v síťovém
    provozu, odkud se načítají dlaždice/obrázky (IIIF, DeepZoom, Zoomify), a stáhni celý obrázek touto cestou – jednotlivě,

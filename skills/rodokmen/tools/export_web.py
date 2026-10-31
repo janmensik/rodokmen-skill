@@ -11,6 +11,9 @@ Spouští se z web/ příkazem `npm run data` (nebo přímo `python3 -I tools/ex
 import hashlib, html, json, os, re, shutil, subprocess, sys, unicodedata
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
+if TOOLS not in sys.path:
+    sys.path.insert(0, TOOLS)
+import fakta
 ROOT = os.path.dirname(TOOLS)
 DATA = os.path.join(ROOT, "data")
 WEB = os.path.join(ROOT, "web")
@@ -58,7 +61,7 @@ def record_rows():
 
 
 def strip_comments(md):
-    """Poznámky <!-- … --> v markdownu jsou pro Clauda, ne pro web."""
+    """Poznámky <!-- … --> v markdownu jsou pro Gemini, ne pro web."""
     return re.sub(r"<!--.*?-->\n?", "", md, flags=re.S)
 
 
@@ -83,7 +86,7 @@ def years(y):
     if y.startswith(("?", "†")):   # neznámé narození: ukázat jen úmrtí („? – před 1743“ → „† před 1743“)
         return "† " + ("před " if "před" in y else "") + ys[-1]
     if y.startswith("*"):
-        return "* " + ys[0]
+        return ", ".join("* " + x for x in ys) if "–" not in y else "* " + ys[0]
     if len(ys) == 1:
         return approx + ys[0]
     tail = y.split("–")[-1]
@@ -185,9 +188,24 @@ def main():
     recs = {r["key"]: r for r in record_rows()}
 
     slugs, used = {}, set()
+    child_slugs = []
+    if 1 in P and P[1].get("deti"):
+        for ch in P[1]["deti"]:
+            yv = (ch.get("y") or "").strip()
+            ys = re.findall(r"\d{4}", yv)
+            s = slugify(ch["n"] + (" " + ys[0] if ys else ""))
+            if s in used or not s:
+                s = f"{s}-1"
+            used.add(s)
+            child_slugs.append((s, ch))
+
     for k in sorted(P):
         p = P[k]
         if placeholder(p) or k in SAME:
+            continue
+        if k == 1 and child_slugs:
+            s = child_slugs[0][0]
+            slugs[1] = s
             continue
         yv = (p.get("y") or "").strip()
         ys = [] if yv.startswith(("?", "†")) else re.findall(r"\d{4}", yv)   # rok úmrtí do adresy nedávat
@@ -210,14 +228,29 @@ def main():
     for k, p in sorted(P.items()):
         if k not in slugs or k in SAME:
             continue
+        if k == 1 and child_slugs:
+            for c_slug, ch in child_slugs:
+                c_sex = ch.get("sex", "M")
+                c_rel = "syn Jana a Julie" if c_sex == "M" else "dcera Jana a Julie"
+                people[c_slug] = dict(
+                    k=1, slug=c_slug, name=ch["n"], roz="", y=ch.get("y", ""), years=fakta.years(ch.get("y")), st="fam",
+                    status=STATUS.get("fam", ""), gen=0, sex=c_sex,
+                    rel=c_rel, line=None, facts=fakta.all_facts(ch), details=fakta.structure(ch), note=ch.get("note", ""), records=[],
+                    father=slugs.get(2), mother=slugs.get(3),
+                    fatherUnknown=False, motherUnknown=False,
+                    child=None, spouse=None,
+                    family=None, ownFamily=None, path=[c_slug],
+                    side=[], docs=[], children=[], also=[]
+                )
+            continue
         path, c = [], k
         while c >= 1:
             path.append(slugs.get(c))
             c //= 2
         people[slugs[k]] = dict(
-            k=k, slug=slugs[k], name=p["n"], y=p.get("y", ""), years=years(p.get("y")), st=p.get("st", "unk"),
+            k=k, slug=slugs[k], name=p["n"], roz=p.get("roz", ""), y=p.get("y", ""), years=fakta.years(p.get("y")), st=p.get("st", "unk"),
             status=STATUS.get(p.get("st"), ""), gen=gen(k), sex="M" if k == 1 and p.get("sex", "M") == "M" or k > 1 and k % 2 == 0 else "F",
-            rel=relation(k), line=line_of(k), facts=p.get("f", []), note=p.get("note", ""), records=[r for r in p.get("r", []) if r in recs],
+            rel=relation(k), line=line_of(k), facts=fakta.all_facts(p), details=fakta.structure(p), note=p.get("note", ""), records=[r for r in p.get("r", []) if r in recs],
             father=slugs.get(2 * k), mother=slugs.get(2 * k + 1),
             fatherUnknown=(2 * k in P and placeholder(P[2 * k])), motherUnknown=(2 * k + 1 in P and placeholder(P[2 * k + 1])),
             child=slugs.get(k // 2) if k > 1 else None, spouse=slugs.get(k ^ 1) if k > 1 else None,
@@ -245,6 +278,19 @@ def main():
         frec = P.get(f, {}).get("r", []) + P.get(m, {}).get("r", [])
         child_rec = [r for r in P[k].get("r", []) if r in recs and recs[r]["kind"] == "N"]
         rlist = [r for r in dict.fromkeys(frec) if r in recs and recs[r]["kind"] == "O"] + child_rec
+        if k == 1 and child_slugs:
+            c_slug_list = [cs for cs, _ in child_slugs]
+            families[fid] = dict(id=fid, father=fs, mother=ms, fatherUnknown=f in P and placeholder(P[f]),
+                                 child=child_slugs[0][0], children=c_slug_list, marriage=marriage, records=rlist,
+                                 line=line_of(f) if f in P else line_of(m), gen=gen(f), side=[])
+            for cs, _ in child_slugs:
+                people[cs]["family"] = fid
+            for x in (fs, ms):
+                if x:
+                    people[x]["ownFamily"] = fid
+                    people[x]["children"] = c_slug_list
+            continue
+
         if fid in families:   # stejný pár potkán dvakrát (předek v rodokmenu vícekrát) – jedna rodina, víc dětí
             fam = families[fid]
             fam["children"].append(slugs[k])
@@ -316,7 +362,13 @@ def main():
     has_story = os.path.exists(os.path.join(DATA, "pribeh.md"))
     public_cfg = {k: v for k, v in cfg.items() if k != "prihlaseni"}
     public_cfg["maPribeh"] = has_story
-    site = dict(config=public_cfg, places=places, root=slugs[1], aliases={a: slugs[a] for a in SAME}, people=people,
+    aliases_dict = {a: slugs[a] for a in SAME}
+    if child_slugs:
+        aliases_dict["krystof-tea-hynek-a-jonas-mensikovi-2010"] = child_slugs[0][0]
+    if 4 in slugs:
+        aliases_dict["ing-radim-jaroslav-mensik-1946"] = slugs[4]
+        aliases_dict["radim-mensik-1946"] = slugs[4]
+    site = dict(config=public_cfg, places=places, root=slugs[1], aliases=aliases_dict, people=people,
                 families=families, records=records, lines=lines,
                 issues=[dict(title=i, text="") if isinstance(i, str) else dict(title=i[0], text=i[1]) for i in ISSUES], stats=stats, hypotheses=hypotheses,
                 docs=[dict(img=d["img"], caption=d["popis"], people=[slugs[k] for k in d.get("osoby", []) if k in slugs])
@@ -332,9 +384,17 @@ def main():
     write(os.path.join(gen_dir, "pribeh.md"), strip_comments(open(story, encoding="utf-8").read()) if has_story else "---\ntitle: Příběh\nlead: ''\n---\n")
 
     hrefs = os.path.join(gen_dir, "fan_hrefs.json")
-    json.dump({k: f"/osoba/{s}/" for k, s in slugs.items()}, open(hrefs, "w"))
+    base = os.environ.get("BASE_URL", cfg.get("base", "/rodokmen")).rstrip("/")
+    href_prefix = f"{base}/" if base else "/"
+    json.dump({k: f"{href_prefix}osoba/{s}/" for k, s in slugs.items()}, open(hrefs, "w"))
     subprocess.run([sys.executable, "-I", "-X", "utf8", os.path.join(TOOLS, "fan_chart.py"),
                     os.path.join(gen_dir, "fan.svg"), "--web", hrefs], check=True, capture_output=True)
+    if os.path.exists(os.path.join(TOOLS, "tree_chart.py")):
+        subprocess.run([sys.executable, "-I", "-X", "utf8", os.path.join(TOOLS, "tree_chart.py"),
+                        os.path.join(gen_dir, "tree.svg"), "--web", hrefs], check=True, capture_output=True)
+
+    if os.path.exists(os.path.join(TOOLS, "export_strom.py")):
+        subprocess.run([sys.executable, "-I", "-X", "utf8", os.path.join(TOOLS, "export_strom.py")], check=True)
 
     gated = login_files(cfg)
 

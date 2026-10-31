@@ -5,7 +5,7 @@ Použití: python3 <skill>/tools/novy_projekt.py <cílová složka> [--ukazka]
   --ukazka   nakopíruje i vymyšlená ukázková data (rodina Novákových), aby šel web hned vyzkoušet
 
 Vytvoří: data/ (prázdné kostry nebo ukázka), web/ (Astro web), tools/ (kopie nástrojů),
-vyrezy/, zdroje/, dokumenty/, pracovni/, CLAUDE.md a .gitignore. Existující soubory nepřepisuje.
+vyrezy/, zdroje/, dokumenty/, pracovni/, GEMINI.md a .gitignore. Existující soubory nepřepisuje.
 """
 import os, shutil, sys
 
@@ -49,7 +49,7 @@ def main():
             copy(os.path.join(SKILL, "tools", f), os.path.join(tools, f))   # nástroje vždy aktualizovat
     for d in ("vyrezy", "zdroje", "dokumenty", "pracovni"):
         os.makedirs(os.path.join(dst, d), exist_ok=True)
-    for name in ("CLAUDE.md", ".gitignore", "poznamky_pro_skill.md"):
+    for name in ("GEMINI.md", ".gitignore", "poznamky_pro_skill.md"):
         out = os.path.join(dst, name)
         if not os.path.lexists(out):
             copy(os.path.join(SKILL, "template", name), out)

@@ -13,7 +13,7 @@ Použití (z kořene projektu):
 Trvalý odkaz na snímek: https://digi.ceskearchivy.cz/<id_knihy>/<snímek>
 Ber ohled na server: stahuj jen snímky, které čteš.
 """
-import html, json, os, re, subprocess, sys, tempfile, urllib.parse, urllib.request, http.cookiejar
+import html, json, os, re, subprocess, sys, tempfile, unicodedata, urllib.parse, urllib.request, http.cookiejar
 
 BASE = "https://digi.ceskearchivy.cz"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,7 +42,8 @@ def text(s):
 
 
 def misto(nazev):
-    _, url = get("/" + urllib.parse.quote(nazev))
+    ascii_nazev = unicodedata.normalize("NFKD", nazev).encode("ascii", "ignore").decode()
+    _, url = get("/" + urllib.parse.quote(ascii_nazev))
     m = re.search(r"[?&]id=(\d+)", url) or re.search(r"/(\d+)-", url)
     if not m:
         sys.exit(f"místo „{nazev}“ nenalezeno")

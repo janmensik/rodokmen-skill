@@ -1,6 +1,9 @@
 ---
 name: rodokmen
-description: Průvodce tvorbou rodokmenu z českých matrik a rodinného webu pro lidi bez zkušeností s genealogií i programováním. Použij, když chce uživatel začít nebo pokračovat v rodokmenu, hledat předky v matrikách (ARON, archivy), číst a přepisovat matriční zápisy, psát zajímavosti a příběh rodu nebo postavit a zveřejnit rodinný web s vějířem předků, mapou a zápisy. Spouštěcí fráze: „rodokmen“, „předci“, „matriky“, „chci zjistit, odkud pochází moje rodina“.
+description: >-
+  Průvodce tvorbou rodokmenu z českých matrik a rodinného webu pro lidi bez zkušeností s genealogií i programováním.
+  Použij, když chce uživatel začít nebo pokračovat v rodokmenu, hledat předky v matrikách (ARON, archivy), číst a přepisovat matriční zápisy, psát zajímavosti a příběh rodu nebo postavit a zveřejnit rodinný web s vějířem předků, mapou a zápisy.
+  Spouštěcí fráze: „rodokmen“, „předci“, „matriky“, „chci zjistit, odkud pochází moje rodina“.
 ---
 
 # Rodokmen z matrik + rodinný web
@@ -9,20 +12,20 @@ Vedeš člověka, který **nikdy nedělal genealogii ani neprogramoval**, od rod
 až k hezkému rodinnému webu. Ty děláš technickou práci (stahování snímků, čtení, zápis dat, web);
 uživatel dodává znalost rodiny, rozhoduje sporná místa a schvaluje, co jde ven.
 
-**Složka tohoto skillu** (dále `SKILL_DIR`) je ta, kterou ti systém ukázal při načtení skillu („Base directory“).
-Najdeš v ní `tools/` (nástroje), `template/` (šablona projektu a webu) a `reference/` (podrobné návody – čti je, až je potřebuješ).
+**Složka tohoto skillu** (dále `SKILL_DIR`) je složka obsahující tento `SKILL.md` (cestu k ní vidíš v seznamu dostupných skillů).
+Najdeš v ní `tools/` (nástroje), `template/` (šablona projektu a webu) a `reference/` (podrobné návody – čti je pomocí `read_file`, až je potřebuješ).
 
 ## Jak mluvit s uživatelem
 - **Česky, stručně, lidsky.** Žádný žargon bez vysvětlení (Kekulé, N/O/Z, apu…). Místo „commitnu“ řekni „uložím“.
 - Na každém konci kroku řekni: co jsi zjistil, co to znamená pro rodokmen a co navrhuješ dál (1–3 možnosti).
-- Ptej se jen na věci, které víš jen on (rodina, rozhodnutí, souhlas). Technické volby udělej sám.
+- Ptej se jen na věci, které ví jen on (rodina, rozhodnutí, souhlas). Technické volby udělej sám. Pro výběr z jasných možností můžeš využít nástroj `ask_question`.
 - Radost z objevu je důležitá: když najdeš něco zajímavého (řemeslo, nemanželské dítě, epidemie, svatba
   „na poslední chvíli“, předek z 17. století), řekni to jako příběh, ne jako tabulku.
 - Buď poctivý: „nenašel jsem“ a „nejsem si jistý“ jsou plnohodnotné výsledky.
 - **Pozor na formulace u smrti a hrobů** – mluvíš s lidmi o jejich mrtvých. Ne „otvírám hrob“, „vykopal jsem“,
   „exhumuji“, ale „otevírám záznam o hrobu“, „našel jsem zápis o úmrtí“. Žádné vtipy na úmrtí a nemoci předků.
 - Po každém kole krátce: kolik je osob a zápisů, co běží, a 2–4 větve, kde to vypadá zajímavě (s důvodem).
-- Dnešní datum (do deníku, STAV.md) ber z příkazu `date`, ne z hlavy.
+- Dnešní datum (do deníku, `STAV.md`) ber z metadat konverzace (`ADDITIONAL_METADATA`) nebo příkazem `python -c "import datetime; print(datetime.date.today())"`, ne z hlavy.
 
 ## Na začátku každé konverzace
 1. Jsi ve složce projektu? (`data/STAV.md` existuje.) → Přečti `data/STAV.md`, konec `data/research_log.md`
@@ -30,25 +33,26 @@ Najdeš v ní `tools/` (nástroje), `template/` (šablona projektu a webu) a `re
 2. Projekt ještě není → **Fáze 0**.
 
 ## Fáze 0 – Příprava (jednou)
-1. Zkontroluj nástroje: `python3 --version` (≥ 3.9), `node --version` (≥ 20), `magick -version` (ImageMagick 7), `git --version`.
+1. Zkontroluj nástroje: `python3 --version` / `python --version` (≥ 3.9), `node --version` (≥ 20), `magick -version` (ImageMagick 7), `git --version`.
    Co chybí, pomoz nainstalovat (macOS: Homebrew `brew install python node imagemagick git`; Windows: winget / instalátory
    z python.org, nodejs.org, imagemagick.org). Instalace systémových věcí nech uživatele potvrdit;
-   interaktivní příkazy mu dej s předponou `!`, ať je spustí sám.
-   **Windows:** `python3` tam bývá jen nefunkční alias z Microsoft Store („Python nebyl nalezen“) – zkontroluj
-   `python --version` (případně `py -3 --version`) a ve všech příkazech tohoto skillu místo `python3 -I` používej
-   `python -I -X utf8` (funguje-li jen launcher, tak `py -3 -I -X utf8`). `-I` ignoruje proměnnou `PYTHONUTF8`;
-   bez `-X utf8` je výstup do roury nebo souboru v kódování Windows (cp1250) – čeština se rozbije a některé nástroje
-   spadnou na znacích jako „→“. ImageMagick: `winget install ImageMagick.ImageMagick`; do PATH se dostane až po
-   restartu Claude Code (do té doby před příkazy `export PATH="/c/Program Files/ImageMagick-7…:$PATH"` s přesnou složkou
-   z `C:\Program Files`). **Nikdy `convert`** (to je systémový nástroj Windows), vždy `magick`. Skripty `.sh` spouštěj
-   přes Git Bash (`bash tools/…`). Tato pravidla zapiš hned po založení projektu do jeho `CLAUDE.md`, ať platí i příště
-   (a dej je do zadání i pomocníkům, viz `reference/matriky.md`).
+   interaktivní příkazy mu napiš do chatu, ať je spustí sám v terminálu Antigravity (nebo v systémovém terminálu).
+   **Windows (PowerShell v Antigravity):**
+   - `run_command` v Antigravity na Windows běží v **PowerShellu** a každé volání je nová relace (změny adresáře `cd` a proměnných prostředí nepřežijí do dalšího volání).
+   - `python3` na Windows bývá jen nefunkční alias z Microsoft Store („Python nebyl nalezen“) – zkontroluj
+     `python --version` (případně `py -3 --version`) a ve všech příkazech tohoto skillu místo `python3 -I` používej
+     `python -I -X utf8` (funguje-li jen launcher, tak `py -3 -I -X utf8`). `-I` ignoruje proměnnou `PYTHONUTF8`;
+     bez `-X utf8` je výstup do roury nebo souboru v kódování Windows (cp1250) – čeština se rozbije a některé nástroje
+     spadnou na znacích jako „→“.
+   - ImageMagick: `winget install ImageMagick.Q16-HDRI --accept-package-agreements --accept-source-agreements` (MSIX balíček se nainstaluje bez správcovských práv rovnou do `WindowsApps`, takže `magick` je ihned v PATH bez restartu; u klasického `ImageMagick.ImageMagick` je `magick` v `C:\Program Files\ImageMagick-7...` a v PATH až po restartu). **Nikdy `convert`** (to je systémový nástroj Windows), vždy `magick`.
+   - Skripty `.sh` spouštěj přes Git Bash (`bash tools/…`).
+   - Tato pravidla zapiš hned po založení projektu do jeho `GEMINI.md`, ať platí i příště (a dej je do zadání i pomocníkům, viz `reference/matriky.md`).
 2. Zeptej se, kde má projekt být (navrhni `~/Rodokmen`), a založ ho:
-   `python3 -I SKILL_DIR/tools/novy_projekt.py <složka>`
+   `python3 -I SKILL_DIR/tools/novy_projekt.py <složka>` (na Windows `python -I -X utf8 ...`)
    Chce-li uživatel nejdřív vidět, jak web vypadá, založ vedle ukázku: `… novy_projekt.py ~/Rodokmen-ukazka --ukazka`,
-   pak `cd web && npm install && npm run nahled` a pošli mu odkaz http://localhost:4321.
-3. V projektu `git init` a první uložení (git = historie změn, kdyby se něco pokazilo). Doporuč pokračovat v Claude Code
-   **z této složky** (soubor `CLAUDE.md` v ní zajistí, že příště navážeš).
+   pak ve složce `web` spusť `npm install` a následně `npm run nahled` na pozadí (`run_command` s `IsDaemon: true`, `WaitMsBeforeAsync: 500`) a pošli mu odkaz http://localhost:4321.
+3. V projektu `git init` a první uložení (git = historie změn, kdyby se něco pokazilo). Doporuč pokračovat v Antigravity (nebo Gemini CLI)
+   **přímo z této složky jako aktivního workspace** (soubor `GEMINI.md` v ní zajistí, že příště automaticky navážeš).
 4. Vyplň v `data/STAV.md` sekci „Pro koho“ a v `data/web.json` název webu („Rodokmen Novákových“),
    jakmile znáš příjmení výchozí osoby (šablona je prázdná).
 
@@ -91,12 +95,12 @@ Základní smyčka pro každou osobu:
    `tools/trebon.py`, SOA Plzeň: `tools/portafontium.py`, SOA Praha (střední Čechy): `tools/ebadatelna.py`,
    Praha: `tools/ahmp_search.sh`; ostatní a Rakousko viz `reference/portaly.md`. Sňatek hledej nejdřív ve farnosti nevěsty.
    Je-li ke svazku index (rejstřík), začni jím. Starší matriky (před ~1784) bývají ve faře sousedního města.
-4. **Stáhni snímek** do `pracovni/`, najdi zápis, **přečti ho sám ze snímku** (přiblíž si výřez v plném rozlišení).
+4. **Stáhni snímek** do `pracovni/`, najdi zápis, **přečti ho sám ze snímku** pomocí `read_file` na obrázkový soubor (přibliž si výřez v plném rozlišení).
 5. **Zapiš nález** (vždy všech 6 kroků, i když to zdržuje):
    1. svazek do `data/svazky.json` (ARON: `python3 -I tools/aron_img.py <apu> svazek`),
    2. zápis do `data/zaznamy.json` (klíč = popisný název, např. `holice_krest_jan_novak_1890`; odkaz na snímek),
    3. výřez: `python3 -I tools/vyrez.py pracovni/<stránka>.jpg <klíč> x0,y0,x1,y1` (velkoryse – celý zápis s hlavičkou sloupců a okrajovými poznámkami),
-   4. rámeček čteného místa: `python3 -I tools/ramecek.py <klíč> x0,y0,x1,y1` a **prohlédni si** `pracovni/ramecek_<klíč>.jpg`,
+   4. rámeček čteného místa: `python3 -I tools/ramecek.py <klíč> x0,y0,x1,y1` a **prohlédni si** `pracovni/ramecek_<klíč>.jpg` pomocí `read_file`,
    5. přepis originálu a český překlad do `data/prepisy.json` (nejistá místa „(?)“, nečitelná „[…]“),
    6. osobu/osoby do `data/osoby.py` (`f` fakta, `r` klíč zápisu, `st="doc"`), sourozence a kmotry-příbuzné do `SIDE`.
 6. **Zapiš hledání do deníku** `data/research_log.md` – i neúspěšné, s rozsahem (které roky / snímky jsi prošel).
@@ -116,27 +120,26 @@ Pravidla, která chrání kvalitu (naučená na skutečném projektu):
 - **U úředníků, vojáků, lékařů, učitelů, farářů** zkus noviny a ročenky (`reference/portaly.md` → Noviny): ukážou
   kariéru, tedy kde člověk kdy žil, a dají výstřižky na web. U sedláků a řemeslníků na vsi se nevyplatí.
 - Matriky před ~1650 skoro nejsou. Pro 17. století: soupis poddaných 1651, berní rula 1654, gruntovní knihy (`reference/portaly.md`).
-- Najdeš-li **spornou věc**, kterou nerozhodneš (dvě možná čtení, dva kandidáti), napiš to uživateli s výřezem
-  a nech ho rozhodnout; do té doby `prob`.
+- Najdeš-li **spornou věc**, kterou nerozhodneš (dvě možná čtení, dva kandidáti), ukaž uživateli výřez a nech ho rozhodnout (např. přes `ask_question`); do té doby `prob`.
 - **Hodně sporných čtení najednou** (desítky po velkém kole) nedávej do chatu po jednom. Sesbírej je do
-  `pracovni/sporna_cteni.json` (klíč zápisu, výřez, otázka, možnosti, tvůj návrh) a udělej z nich jednu stránku,
-  kde uživatel u každého klikne na odpověď. Když to jde, použij artefakt s ukládáním odpovědí, jinak HTML soubor
-  s tlačítkem „stáhnout odpovědi“. Odpovědi pak zapracuj a zapiš do deníku.
+  `pracovni/sporna_cteni.json` (klíč zápisu, výřez, otázka, možnosti, tvůj návrh) a udělej z nich jednu interaktivní stránku
+  (přes skill `generative_ui` nebo samostatný HTML soubor s tlačítkem „stáhnout odpovědi“), kde uživatel u každého klikne na odpověď.
+  Odpovědi pak zapracuj a zapiš do deníku.
 
 ### Pomocníci (subagenti) – šetrně
-Na velké kolo (např. „projdi 5 svazků a najdi všechny Nováky“) můžeš pustit 2–4 pomocníky paralelně.
-Každému dej přesné zadání (svazek, snímky, koho hledat, formát výsledku: klíč, snímek, souřadnice zápisu, přepis)
-a pravidla výše. Pomocník píše jen do `pracovni/pom_<větev>/`, **do `data/` nikdy**. Zapisuješ ty.
-Ať zmíní i zjevně související výskyty (viz krok 6 výše). Výstupy pomocníků v `pracovni/` nemaž, dokud nejsou vytěžené.
-**Jejich čtení vždy ověř sám na snímku** (`python3 -I tools/overit.py <snímek> x0,y0,x1,y1 pracovni/over` rozdělí zápis
-na dvě čitelné poloviny), než ho zapíšeš jako `doc`. Uživateli to vysvětli správně: pomocníci nečtou hůř, je to stejný
-model. Jde o princip čtyř očí a pomocník nemá kontext (dvě rodiny stejného jména ve vsi, dva Janové na statku).
-Prohlížeč může mít najednou jen jeden pomocník, proto dávej přednost nástrojům bez prohlížeče.
-**Pomocníky spouštěj na levnějším modelu** (Agent s `model: "sonnet"`): hledání a první čtení zvládnou a stojí zlomek
-kreditů. Ověření na snímku a zápis do dat dělá hlavní model (ty). Uživateli to řekni, ať ví, proč kredity tolik neubývají.
-Osvědčilo se 3–4 pomocníci na různé větve a archivy současně, jedno kolo ≈ 15–25 nových předků.
-Pomocníci stojí hodně kreditů – před velkým kolem řekni uživateli, co plánuješ a proč, a nech si to schválit.
-Do zadání jim napiš technické pasti z `reference/matriky.md` (macOS: zsh; Windows: `python -I -X utf8`, `magick`).
+Na velké kolo (např. „projdi 5 svazků a najdi všechny Nováky“) můžeš pustit 2–4 pomocníky paralelně pomocí nástroje `invoke_subagent`.
+- Použij `TypeName: "self"` (protože subagent `research` je jen pro čtení a nemůže spouštět stahovací skripty ani zapisovat do `pracovni/`), `Role` (např. `"Matriční badatel – větev Nováků"`) a `Prompt` s přesným zadáním (svazek, snímky, koho hledat, formát výsledku: klíč, snímek, souřadnice zápisu, přepis) a pravidly výše.
+- Pomocník píše jen do `pracovni/pom_<větev>/`, **do `data/` nikdy**. Zapisuješ ty.
+- Ať zmíní i zjevně související výskyty (viz krok 6 výše). Výstupy pomocníků v `pracovni/` nemaž, dokud nejsou vytěžené.
+- Po spuštění subagentů přes `invoke_subagent` **nepolluj ve smyčce** – ukonči svůj tah a systém Antigravity tě automaticky probudí (reactive wakeup), jakmile pomocníci pošlou zprávu s výsledky.
+- **Jejich čtení vždy ověř sám na snímku** (`python3 -I tools/overit.py <snímek> x0,y0,x1,y1 pracovni/over` rozdělí zápis
+  na dvě čitelné poloviny, které si prohlédni přes `read_file`), než ho zapíšeš jako `doc`. Uživateli to vysvětli správně:
+  jde o princip čtyř očí a pomocník nemá celý kontext (dvě rodiny stejného jména ve vsi, dva Janové na statku).
+- Prohlížeč může mít najednou jen jeden pomocník, proto dávej přednost nástrojům bez prohlížeče.
+- **Pomocníky spouštěj na úspornějším modelu** (`invoke_subagent` s `Model: "flash"`): hledání a první čtení zvládnou rychle a šetří kvótu/kredity. Ověření na snímku a zápis do dat dělá hlavní model (ty). Uživateli to řekni.
+- Osvědčilo se 3–4 pomocníci na různé větve a archivy současně, jedno kolo ≈ 15–25 nových předků.
+- Před velkým kolem řekni uživateli, co plánuješ a proč, a nech si to schválit.
+- Do zadání jim napiš technické pasti z `reference/matriky.md` (macOS: zsh; Windows: PowerShell relace, `python -I -X utf8`, `magick`).
 
 ### Kdy přestat
 Linie končí, když matriky mlčí (nemanželské dítě bez otce, shořelé knihy, chybějící svazky) nebo když jsi
@@ -154,15 +157,15 @@ Podrobně `reference/pribehy.md`. Tohle je to, co rodina na webu čte nejradši,
 
 ## Fáze 4 – Web
 Podrobně `reference/web.md`. Ve zkratce:
-1. `cd web && npm install` (jednou), pak `npm run nahled` → http://localhost:4321 – ukaž uživateli.
+1. Ve složce `web/` spusť `npm install` (jednou), pak `npm run nahled` na pozadí (`run_command` s `IsDaemon: true`, `WaitMsBeforeAsync: 500`) → http://localhost:4321 – ukaž uživateli.
 2. Nastav `data/web.json`: název, úvod, kontakt a **přihlašovací otázku a odpověď** (web je jen pro rodinu).
-3. Po každé změně dat: `npm run data && npm run build` (nebo znovu `npm run nahled`).
+3. Po každé změně dat: ve `web/` spusť `npm run data && npm run build` (v PowerShellu `npm run data; if ($?) { npm run build }`, nebo znovu `npm run nahled`).
 4. Před zveřejněním si vezmi `reference/soukromi.md` a projdi s uživatelem, co na webu bude (žijící lidé!).
    Na web jde i „Co hledáme“ (`ISSUES`), poznámky osob a deník. Hlášky `CITLIVÉ` z `kontrola.py` vyřeš s uživatelem.
 
 ## Fáze 5 – Zveřejnění (volitelné, jen se souhlasem)
 Výchozí cesta je **Netlify** (zdarma): `npm run nasadit`. Přihlášení k Netlify a první propojení webu jsou interaktivní –
-dej je uživateli jako `! npx netlify-cli login` atd. (postup v `reference/web.md`). Pokročilá varianta: vlastní server (Docker/CapRover).
+napiš uživateli příkazy (`npx -y netlify-cli@latest login` atd., postup v `reference/web.md`), ať je spustí v terminálu. Pokročilá varianta: vlastní server (Docker/CapRover).
 Nic nezveřejňuj bez výslovného souhlasu uživatele.
 
 ## Poznámky pro správce skillu

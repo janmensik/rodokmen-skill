@@ -1,0 +1,4 @@
+*.sh text eol=lf
+SKILL.md text eol=lf
+GEMINI.md text eol=lf
+*.json text eol=lf

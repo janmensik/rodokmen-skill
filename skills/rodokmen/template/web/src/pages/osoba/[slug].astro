@@ -30,7 +30,64 @@ const path = [...p.path].reverse().filter(Boolean);
     <p class="note">V rodokmenu dvakrát – pedigree collapse: je předkem přes {p.children.map((c, i) => <>{i > 0 && ' i přes '}<PersonLink slug={c} /></>)}.
       Podruhé jako {p.also.map((a) => a.rel).join(', ')}.</p>
   )}
-  {p.facts.length > 0 && <ul class="facts">{p.facts.map((f) => <li>{f}</li>)}</ul>}
+
+  {p.details && (p.details.birth || p.details.job || p.details.home || p.details.origin || p.details.roz || p.details.marriages?.length || p.details.death || p.details.burial || p.details.other?.length) ? (
+    <div class="person-data-card">
+      <table class="person-table">
+        <tbody>
+          {p.details.roz && (
+            <tr><th>Rodné příjmení</th><td>{p.details.roz}</td></tr>
+          )}
+          {p.details.birth ? (
+            <tr><th>Narození</th><td>{p.details.birth}</td></tr>
+          ) : p.years ? (
+            <tr><th>Období života</th><td>{p.years}</td></tr>
+          ) : null}
+          {p.details.job && (
+            <tr><th>Povolání</th><td>{p.details.job}</td></tr>
+          )}
+          {p.details.home && (
+            <tr><th>Bydliště / domov</th><td>{p.details.home}</td></tr>
+          )}
+          {p.details.origin && (
+            <tr><th>Původ</th><td>{p.details.origin}</td></tr>
+          )}
+          {p.details.marriages?.length > 0 && (
+            <tr>
+              <th>{p.details.marriages.length > 1 ? 'Sňatky' : 'Sňatek'}</th>
+              <td>{p.details.marriages.map((m) => <div>{m}</div>)}</td>
+            </tr>
+          )}
+          {p.details.death && (
+            <tr><th>Úmrtí</th><td>{p.details.death}</td></tr>
+          )}
+          {p.details.burial && (
+            <tr><th>Pohřeb</th><td>{p.details.burial}</td></tr>
+          )}
+          {p.details.other?.length > 0 && (
+            <tr>
+              <th>Další údaje</th>
+              <td>{p.details.other.map((o) => <div>{o}</div>)}</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  ) : (
+    p.facts.length > 0 && <ul class="facts">{p.facts.map((f) => <li>{f}</li>)}</ul>
+  )}
+
+  {p.details?.kids?.length > 0 && (
+    <div class="card" style="margin-bottom: 1.2rem;">
+      <h3 style="margin-top: 0;">Děti</h3>
+      <ul class="facts">
+        {p.details.kids.map((k) => (
+          <li><strong>{k.name}</strong>{k.birth ? ` (* ${k.birth})` : k.y ? ` (${k.y})` : ''}{k.home ? ` – domov v ${k.home}` : ''}</li>
+        ))}
+      </ul>
+    </div>
+  )}
+
   {p.note && <p class="note">{p.note}</p>}
 
   <h2>Rodina</h2>
@@ -39,6 +96,9 @@ const path = [...p.path].reverse().filter(Boolean);
       <h3>Rodiče</h3>
       <p>Otec: {p.father ? <PersonLink slug={p.father} /> : <span class="muted">{p.fatherUnknown ? 'neuveden (nemanželské dítě)' : 'zatím neznámý'}</span>}<br />
         Matka: {p.mother ? <PersonLink slug={p.mother} /> : <span class="muted">zatím neznámá</span>}</p>
+      {p.family && families[p.family] && families[p.family].children.filter((s) => s !== p.slug).length > 0 && (
+        <p>Sourozenci: {families[p.family].children.filter((s) => s !== p.slug).map((s, i) => <>{i > 0 && ', '}<PersonLink slug={s} /></>)}</p>
+      )}
       {p.family && <p class="small"><a href={href.family(p.family)}>Rodina, ze které pochází →</a></p>}
     </div>
     {p.child && (
@@ -71,7 +131,7 @@ const path = [...p.path].reverse().filter(Boolean);
   {p.docs.length > 0 && (
     <>
       <h2>Rodinné dokumenty</h2>
-      <div class="docs">{p.docs.map((d) => <figure><a href={`/img/${d.img}.jpg`} target="_blank" rel="noopener"><img src={`/img/${d.img}.jpg`} alt={d.caption} loading="lazy" /></a><figcaption>{d.caption}</figcaption></figure>)}</div>
+      <div class="docs">{p.docs.map((d) => <figure><a href={href.to(`/img/${d.img}.jpg`)} target="_blank" rel="noopener"><img src={href.to(`/img/${d.img}.jpg`)} alt={d.caption} loading="lazy" /></a><figcaption>{d.caption}</figcaption></figure>)}</div>
     </>
   )}
 

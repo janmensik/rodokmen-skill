@@ -82,7 +82,7 @@ Viz `web.md`.
 - `zajimavosti.md` – `## Nadpis` + text, odkazy `[Jméno](/osoba/<slug>/)`.
 - `pribeh.md` – „Příběh <hlavního rodu>“: frontmatter `title`, `lead` + kapitoly `##`; když soubor neexistuje,
   položka menu se skryje. Jak psát: `pribehy.md`.
-- Poznámky pro Clauda v markdownu piš jako `<!-- … -->` – na web nejdou.
+- Poznámky pro Gemini v markdownu piš jako `<!-- … -->` – na web nejdou.
 - `archivni_dotazy.md`, `udaje_od_rodiny.md` – volný text.
 
 ## Odkazy na osoby (slug)

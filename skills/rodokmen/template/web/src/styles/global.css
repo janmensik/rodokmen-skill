@@ -149,6 +149,9 @@ main.full { max-width: none; padding: 0; }
 .fan-stage:active { cursor: grabbing; }
 .fan-stage svg { width: 100%; height: 100%; display: block; }
 .fan-links a.hit path, .fan-links a.hit circle { fill: rgba(255, 214, 0, 0.5); stroke: #d7302a; stroke-width: 3; vector-effect: non-scaling-stroke; }
+.fan-links .tree-card { cursor: pointer; }
+.fan-links a.tree-card:hover > rect:first-of-type { stroke: #3b2e22; stroke-width: 2.6; }
+.fan-links .tree-card.hit > rect:first-of-type { stroke: #d7302a; stroke-width: 4.5; fill: #fff6d6; }
 @media (max-width: 760px) { .fan-hint { display: none; } .fan-stage { height: calc(100vh - 150px); } }
 
 /* home teaser */

@@ -47,7 +47,7 @@ def years(y):
     if y.startswith(("?", "†")):   # neznámé narození: ukázat jen úmrtí („? – před 1743“ → „† před 1743“)
         return "† " + ("před " if "před" in y else "") + ys[-1]
     if y.startswith("*"):
-        return "* " + ys[0]
+        return ", ".join("* " + x for x in ys) if "–" not in y else "* " + ys[0]
     if len(ys) == 1:
         return approx + ys[0] + ("–?" if "–" in y or " – " in y else "")
     tail = y.split("–")[-1]
@@ -109,15 +109,39 @@ for k in slots:
     p = P.get(k)
     if not p:
         continue
+    maiden = p.get("roz", "")
     name, yrs, st = p["n"], years(p.get("y")), p.get("st")
+    title_name = f'{name}{f" (roz. {maiden})" if maiden else ""}'
     if k in HREFS:
         shape = (f'<circle cx="{CX}" cy="{CY}" r="{r1}"/>' if g == 0 else f'<path d="{sector(r0, r1, a0, a1)}"/>')
-        links.append(f'<a href="{HREFS[k]}"><title>{html.escape(name)} {html.escape(yrs)}</title>{shape}</a>')
+        links.append(f'<a href="{HREFS[k]}"><title>{html.escape(title_name)} {html.escape(yrs)}</title>{shape}</a>')
     unknown = st == "unk"
     style = 'font-style="italic" fill="#8A8278"' if unknown else ('font-style="italic" fill="#2B2620"' if st in ("prob", "mh") else 'fill="#1F1A15"')
     if g == 0:
-        texts.append(f'<text x="{CX}" y="{CY - 8}" text-anchor="middle" font-size="44" font-weight="700" fill="#FFF8EE">{html.escape(name)}</text>')
-        texts.append(f'<text x="{CX}" y="{CY + 46}" text-anchor="middle" font-size="34" fill="#F1E3CF">{html.escape(yrs)}</text>')
+        deti = p.get("deti", [])
+        if deti:
+            names = [ch["n"].split()[0] for ch in deti]
+            line1 = " · ".join(names[:2])
+            line2 = " · ".join(names[2:])
+            line3 = "Menšíkovi"
+            line4 = "* 2010 · 2013 · 2015 · 2017"
+            texts.append(f'<text x="{CX}" y="{CY - 40}" text-anchor="middle" font-size="28" font-weight="700" fill="#FFF8EE">{html.escape(line1)}</text>')
+            texts.append(f'<text x="{CX}" y="{CY - 8}" text-anchor="middle" font-size="28" font-weight="700" fill="#FFF8EE">{html.escape(line2)}</text>')
+            texts.append(f'<text x="{CX}" y="{CY + 26}" text-anchor="middle" font-size="24" font-weight="600" fill="#E2D4C3">{html.escape(line3)}</text>')
+            texts.append(f'<text x="{CX}" y="{CY + 58}" text-anchor="middle" font-size="18" fill="#D5C5B1">{html.escape(line4)}</text>')
+            continue
+        fs_yr = fit(yrs, 400, 32, 20)
+        if len(name) > 24 and " " in name:
+            head, tail = name.rsplit(" ", 1)
+            fs1 = fit(head, 420, 34, 22)
+            fs2 = fit(tail, 400, 34, 22)
+            texts.append(f'<text x="{CX}" y="{CY - 30}" text-anchor="middle" font-size="{fs1:.1f}" font-weight="700" fill="#FFF8EE">{html.escape(head)}</text>')
+            texts.append(f'<text x="{CX}" y="{CY + 8}" text-anchor="middle" font-size="{fs2:.1f}" font-weight="700" fill="#FFF8EE">{html.escape(tail)}</text>')
+            texts.append(f'<text x="{CX}" y="{CY + 50}" text-anchor="middle" font-size="{fs_yr:.1f}" fill="#F1E3CF">{html.escape(yrs)}</text>')
+        else:
+            fs0 = fit(name, 420, 44, 24)
+            texts.append(f'<text x="{CX}" y="{CY - 8}" text-anchor="middle" font-size="{fs0:.1f}" font-weight="700" fill="#FFF8EE">{html.escape(name)}</text>')
+            texts.append(f'<text x="{CX}" y="{CY + 46}" text-anchor="middle" font-size="{fs_yr:.1f}" fill="#F1E3CF">{html.escape(yrs)}</text>')
         continue
     am = (a0 + a1) / 2
     if g <= 4:   # tangential text on arcs

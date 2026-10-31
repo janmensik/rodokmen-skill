@@ -15,7 +15,7 @@ a překladem), stránka osoby, rodiny, „Co hledáme“, výzkumný deník, hle
 | `npm run dev` | vývojový režim při úpravách vzhledu |
 | `npm run nasadit` | data + build + nahrání na Netlify |
 
-Náhled spouštěj na pozadí a uživateli pošli odkaz. Vzhled si ověř sám (snímek obrazovky přes prohlížeč, je-li k dispozici).
+Náhled spouštěj na pozadí (`run_command` s `IsDaemon: true` a `WaitMsBeforeAsync: 500`) a uživateli pošli odkaz. Vzhled si ověř sám (snímek obrazovky přes integrovaný prohlížeč / `chrome-devtools-mcp`, je-li k dispozici).
 
 ## `data/web.json`
 ```json
@@ -44,13 +44,12 @@ Náhled spouštěj na pozadí a uživateli pošli odkaz. Vzhled si ověř sám (
 
 ## Zveřejnění na Netlify (výchozí, zdarma)
 1. Uživatel si založí účet na netlify.com (stačí přihlášení přes Google/GitHub) – udělá sám.
-2. Přihlášení CLI (otevře prohlížeč) – dej uživateli: `! cd web && npx -y netlify-cli@latest login`
-3. Založení webu a propojení složky (interaktivní, jednou) – dej uživateli:
-   `! cd web && npx -y netlify-cli@latest sites:create` (zvolí tým a název → adresa `https://<název>.netlify.app`),
+2. Přihlášení CLI (otevře prohlížeč) – napiš uživateli příkaz, ať ho spustí v terminálu ve složce `web`: `npx -y netlify-cli@latest login`
+3. Založení webu a propojení složky (interaktivní, jednou) – napiš uživateli příkaz do terminálu ve složce `web`:
+   `npx -y netlify-cli@latest sites:create` (zvolí tým a název → adresa `https://<název>.netlify.app`),
    případně `npx netlify-cli link`, pokud web už existuje.
-   **Windows:** když `!` běží ve Windows PowerShellu 5.1 (`&&` tam nefunguje a `npx` blokuje Execution Policy), ať uživatel
-   otevře PowerShell 7 nebo Příkazový řádek, přejde do složky `web` a spustí `npx -y netlify-cli@latest login` (a `sites:create`).
-4. Nasazení: `cd web && npm run nasadit` (můžeš spustit sám; vypíše adresu webu).
+   **Windows:** pokud PowerShell blokuje `npx` kvůli Execution Policy, ať uživatel příkaz spustí v Příkazovém řádku (`cmd`) nebo Git Bashi ve složce `web`.
+4. Nasazení: ve složce `web` spusť `npm run nasadit` (můžeš spustit sám; vypíše adresu webu).
 5. Ověř: otevři adresu → musí se ukázat přihlašovací otázka; po správné odpovědi web.
    Přihlášení zajišťuje Netlify Edge Function `web/netlify/edge-functions/brana.js` (generuje ji export).
 Další aktualizace = jen `npm run nasadit`. Vlastní doménu lze nastavit v administraci Netlify.
