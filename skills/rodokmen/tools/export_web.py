@@ -368,6 +368,20 @@ def main():
     if 4 in slugs:
         aliases_dict["ing-radim-jaroslav-mensik-1946"] = slugs[4]
         aliases_dict["radim-mensik-1946"] = slugs[4]
+    if 12 in slugs:
+        aliases_dict["juraj-caki"] = slugs[12]
+        aliases_dict["juraj-caki-1921"] = slugs[12]
+        aliases_dict["jiri-caki"] = slugs[12]
+    if 13 in slugs:
+        aliases_dict["marie-cakiova"] = slugs[13]
+        aliases_dict["marie-cakicova"] = slugs[13]
+        aliases_dict["marie-bubancova"] = slugs[13]
+    if 24 in slugs:
+        aliases_dict["andrej-caki"] = slugs[24]
+    if 25 in slugs:
+        aliases_dict["marya-cakiova"] = slugs[25]
+    if 49 in slugs:
+        aliases_dict["julia-cakiova"] = slugs[49]
     site = dict(config=public_cfg, places=places, root=slugs[1], aliases=aliases_dict, people=people,
                 families=families, records=records, lines=lines,
                 issues=[dict(title=i, text="") if isinstance(i, str) else dict(title=i[0], text=i[1]) for i in ISSUES], stats=stats, hypotheses=hypotheses,
