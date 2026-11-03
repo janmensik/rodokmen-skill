@@ -16,8 +16,9 @@ Použití (z kořene projektu `python3 -I tools/portafontium.py …`, na Windows
 Snímek = pořadové číslo náhledu v prohlížeči portálu (1, 2, 3…). Stránky knih se ukládají do pracovni/.cache_pf/.
 Ber ohled na server: stahuj jen snímky, které čteš.
 """
-import html, http.client, json, os, re, sys, time, unicodedata, urllib.error, urllib.parse, urllib.request
+import html, http.client, json, os, re, ssl, sys, time, unicodedata, urllib.error, urllib.parse, urllib.request
 
+SSL_CTX = ssl._create_unverified_context()
 BASE = "https://www.portafontium.eu"
 ARCHIV = "soap-pn"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,7 +33,7 @@ def get(url, binary=False):
         if attempt:
             time.sleep(2 * attempt)
         try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=120) as r:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), context=SSL_CTX, timeout=120) as r:
                 data = r.read()
             return data if binary else data.decode("utf-8", "replace")
         except urllib.error.HTTPError as e:
