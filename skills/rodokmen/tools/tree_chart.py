@@ -12,7 +12,7 @@ import fakta
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else os.path.join(ROOT, "vystupy")
 WEB = "--web" in sys.argv
-HREFS = {int(k): v for k, v in json.load(open(sys.argv[sys.argv.index("--web") + 1])).items()} if WEB else {}
+HREFS = {str(k): v for k, v in json.load(open(sys.argv[sys.argv.index("--web") + 1], encoding="utf-8")).items()} if WEB else {}
 CHROME = next((c for c in ("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
                            "C:/Program Files/Google/Chrome/Application/chrome.exe",
                            "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
@@ -143,13 +143,13 @@ if deti:
         cname = ch["n"]
         cyr = fakta.years(ch.get("y"))
         csub = card_subtitle(ch) or ("syn Jana a Julie" if ch.get("sex", "M") == "M" else "dcera Jana a Julie")
-        nid = add_node(f"ch_{idx}", cname, cyr, csub, 0, 1, "#5B4A3A")
+        nid = add_node(f"ch_{idx}", cname, cyr, csub, 0, f"ch_{idx}", "#5B4A3A")
         uid = add_unit(f"u_ch_{idx}", 0, [nid], 0.5 + (idx - (n_ch - 1) / 2) * 0.001)
 elif len(child_matches) >= 2 and all(child_matches):
     n_ch = len(child_matches)
     for idx, m in enumerate(child_matches):
         cname, cyr = m.group(1).strip(), m.group(2).strip()
-        nid = add_node(f"ch_{idx}", cname, cyr, "dítě Jana a Julie", 0, 1, "#5B4A3A")
+        nid = add_node(f"ch_{idx}", cname, cyr, "dítě Jana a Julie", 0, f"ch_{idx}", "#5B4A3A")
         uid = add_unit(f"u_ch_{idx}", 0, [nid], 0.5 + (idx - (n_ch - 1) / 2) * 0.001)
 else:
     nid = add_node("p_1", p1["n"], fakta.years(p1.get("y")), card_subtitle(p1), 0, 1, "#5B4A3A")
@@ -199,13 +199,13 @@ def build_side_branch(v, g, k_anchor, skey, parent_uid=None, sibling_k=None, is_
     yrs = fakta.years(v.get("y") or fakta.birth_years(v))
     sub = card_subtitle(v, is_side=True)
     col = color_for_k(k_anchor, is_side=True)
-    nid = add_node(f"side_{idx_tag}", name, yrs, sub, g, k_anchor, col, is_side=True, maiden=v.get("roz", ""))
+    nid = add_node(f"side_{idx_tag}", name, yrs, sub, g, None, col, is_side=True, maiden=v.get("roz", ""))
     nids = [nid]
     if v.get("manzel"):
         sp = v["manzel"]
         sp_yrs = fakta.years(sp.get("y") or fakta.birth_years(sp))
         sp_sub = card_subtitle(sp, is_side=True)
-        sp_id = add_node(f"side_{idx_tag}_sp", sp["n"], sp_yrs, sp_sub, g, k_anchor, col, is_side=True, maiden=sp.get("roz", ""))
+        sp_id = add_node(f"side_{idx_tag}_sp", sp["n"], sp_yrs, sp_sub, g, None, col, is_side=True, maiden=sp.get("roz", ""))
         nids.append(sp_id)
     uid = add_unit(f"u_side_{idx_tag}", g, nids, skey,
                    sibling_anchor_k=k_anchor if is_top_sibling else None,
@@ -551,7 +551,7 @@ for nid, n in nodes.items():
     if sub:
         inner.append(f'<text x="{tx:.1f}" y="{y0 + 70:.1f}" font-size="12" fill="{fg_sub}">{html.escape(sub)}</text>')
 
-    href_url = HREFS.get(n["k_link"]) if WEB and n["k_link"] else None
+    href_url = HREFS.get(str(n["k_link"])) if WEB and n["k_link"] is not None else None
     title_name = f'{name}{f" (roz. {maiden})" if maiden else ""}'
     title_txt = f'{title_name} {yrs} {sub}'.strip()
     if href_url:

@@ -7,7 +7,7 @@ import html, json, math, os, re, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else os.path.join(ROOT, "vystupy")
 WEB = "--web" in sys.argv
-HREFS = {int(k): v for k, v in json.load(open(sys.argv[sys.argv.index("--web") + 1])).items()} if WEB else {}
+HREFS = {int(k): v for k, v in json.load(open(sys.argv[sys.argv.index("--web") + 1], encoding="utf-8")).items() if str(k).isdigit()} if WEB else {}
 CHROME = next((c for c in ("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
                            "C:/Program Files/Google/Chrome/Application/chrome.exe",
                            "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",

@@ -400,12 +400,18 @@ def main():
     hrefs = os.path.join(gen_dir, "fan_hrefs.json")
     base = os.environ.get("BASE_URL", cfg.get("base", "/rodokmen")).rstrip("/")
     href_prefix = f"{base}/" if base else "/"
-    json.dump({k: f"{href_prefix}osoba/{s}/" for k, s in slugs.items()}, open(hrefs, "w"))
+    json.dump({k: f"{href_prefix}osoba/{s}/" for k, s in slugs.items()}, open(hrefs, "w", encoding="utf-8"))
     subprocess.run([sys.executable, "-I", "-X", "utf8", os.path.join(TOOLS, "fan_chart.py"),
                     os.path.join(gen_dir, "fan.svg"), "--web", hrefs], check=True, capture_output=True)
     if os.path.exists(os.path.join(TOOLS, "tree_chart.py")):
+        tree_hrefs = os.path.join(gen_dir, "tree_hrefs.json")
+        tree_hrefs_dict = {str(k): f"{href_prefix}osoba/{s}/" for k, s in slugs.items()}
+        if child_slugs:
+            for idx, (cs, _) in enumerate(child_slugs):
+                tree_hrefs_dict[f"ch_{idx}"] = f"{href_prefix}osoba/{cs}/"
+        json.dump(tree_hrefs_dict, open(tree_hrefs, "w", encoding="utf-8"))
         subprocess.run([sys.executable, "-I", "-X", "utf8", os.path.join(TOOLS, "tree_chart.py"),
-                        os.path.join(gen_dir, "tree.svg"), "--web", hrefs], check=True, capture_output=True)
+                        os.path.join(gen_dir, "tree.svg"), "--web", tree_hrefs], check=True, capture_output=True)
 
     if os.path.exists(os.path.join(TOOLS, "export_strom.py")):
         subprocess.run([sys.executable, "-I", "-X", "utf8", os.path.join(TOOLS, "export_strom.py")], check=True)
