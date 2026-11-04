@@ -30,7 +30,10 @@ BASE = "https://ebadatelna.soapraha.cz"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _cj = http.cookiejar.CookieJar()
 _op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(_cj))
-_op.addheaders = [("User-Agent", "Mozilla/5.0 (rodokmen)"), ("Accept-Language", "cs")]
+_op.addheaders = [
+    ("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+    ("Accept-Language", "cs,en;q=0.8"),
+]
 NEEXISTUJE = "neexistující stránku"
 
 
